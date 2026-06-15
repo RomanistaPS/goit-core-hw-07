@@ -1,5 +1,5 @@
 from collections import UserDict
-from datetime import datetime, date, timedelta
+from datetime import datetime, timedelta
 
 class Field:
     def __init__(self, value):
@@ -117,8 +117,10 @@ def input_error(func):
             return str(e)
         except KeyError:
             return "Contact not found."
+        except AttributeError:
+            return "Contact not found."
         except IndexError:
-            return "Enter username please."
+            return "Invalid command arguments."
     return inner
 
 def parse_input(user_input):
@@ -146,23 +148,18 @@ def add_contact(args, book: AddressBook):
 
 @input_error
 def change_contact(args, book):
-    name, phone = args
+    name, old_phone, new_phone = args
     record = book.find(name)
-
-    if record is None:
-        raise KeyError("Contact not found.")
-
-    old_phone = record.phones[0].value
-    record.edit_phone(old_phone, phone)
+    record.edit_phone(old_phone, new_phone)
     return "Contact updated."
 
 @input_error
 def show_phone(args, book):
     name = args[0]
     record = book.find(name)
-    if record is not None:
-        return ', '.join(p.value for p in record.phones)
-    raise KeyError("Contact not found.")
+
+    return ', '.join(p.value for p in record.phones)
+
 
 
 @input_error
@@ -178,9 +175,6 @@ def add_birthday(args, book: AddressBook):
 
     record = book.find(name)
 
-    if record is None:
-        raise KeyError("Contact not found.")
-
     record.add_birthday(birthday)
 
     return "Birthday added."
@@ -190,9 +184,6 @@ def show_birthday(args, book):
     name = args[0]
 
     record = book.find(name)
-
-    if record is None:
-        raise KeyError("Contact not found.")
 
     if record.birthday is None:
         return "Birthday not set."
@@ -215,8 +206,6 @@ def birthdays(args, book: AddressBook):
         )
 
     return "\n".join(result)
-
-
 
 def main():
     book = AddressBook()
